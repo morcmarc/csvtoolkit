@@ -1,4 +1,4 @@
-package query
+package utils
 
 import (
 	"encoding/csv"

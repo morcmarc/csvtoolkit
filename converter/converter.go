@@ -10,7 +10,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/morcmarc/csvtoolkit/types"
+	"github.com/morcmarc/csvtoolkit/inferer"
+	"github.com/morcmarc/csvtoolkit/utils"
 )
 
 type Converter struct {
@@ -29,20 +30,18 @@ func NewConverter(csvInput *os.File, jsonOutput *os.File) *Converter {
 
 // Processes the input and writes converted objects onto the output
 func (c *Converter) Run() {
-	var cReader *csv.Reader
+	cReader := utils.NewDefaultCSVReader(c.input)
 
-	cReader = getNewCsvReader(c.input)
 	fields, err := cReader.Read()
 	if err != nil {
 		log.Fatalf("Could not read input: %s", err)
 	}
-	typeMap, err := types.Infer(cReader, fields, 10)
+	typeMap, err := inferer.Infer(cReader, fields, 10)
 	if err != nil {
 		log.Fatalf("Could not infer types: %s", err)
 	}
 
-	c.input.Seek(0, 0)
-	cReader = getNewCsvReader(c.input)
+	cReader.Reset()
 	cReader.Read()
 
 	r := NewRecords(fields, typeMap)

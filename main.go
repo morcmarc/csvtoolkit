@@ -8,9 +8,9 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "csv2json"
-	app.Usage = "Convert csv files into json objects."
-	app.Version = "0.1.1"
+	app.Name = "csvtoolkit"
+	app.Usage = "convert, query csv files"
+	app.Version = "0.1.0"
 	app.Commands = []cli.Command{
 		convertCommand,
 		queryCommand,

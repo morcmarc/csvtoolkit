@@ -2,10 +2,12 @@ package query
 
 import (
 	"testing"
+
+	"github.com/morcmarc/csvtoolkit/utils"
 )
 
 type csvReaderMock struct {
-	CsvReader
+	utils.CsvReader
 	i int
 }
 

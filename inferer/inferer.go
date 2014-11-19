@@ -1,11 +1,12 @@
-package types
+package inferer
 
 /* Credit goes to nathanwdavis */
 
 import (
-	"encoding/csv"
 	"io"
 	"strconv"
+
+	"github.com/morcmarc/csvtoolkit/utils"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 	BOOL   = false
 )
 
-func Infer(csv *csv.Reader, fields []string, numLines int) (map[string]interface{}, error) {
+func Infer(csv utils.CsvReader, fields []string, numLines int) (map[string]interface{}, error) {
 
 	template := make(map[string]interface{})
 	learners := make([]*Learner, len(fields))

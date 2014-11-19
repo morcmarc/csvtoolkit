@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/morcmarc/csvtoolkit/types"
+	"github.com/morcmarc/csvtoolkit/inferer"
 )
 
 type Records struct {
@@ -27,19 +27,19 @@ func (r *Records) Convert(line []string) map[string]interface{} {
 		var typedv interface{}
 		var err error
 		switch typ := r.TypeMap[f]; {
-		case line[idx] == "" && typ != types.STRING:
+		case line[idx] == "" && typ != inferer.STRING:
 			typedv = nil
-		case typ == types.INT:
+		case typ == inferer.INT:
 			typedv, err = strconv.ParseInt(line[idx], 0, 64)
 			if err != nil {
 				log.Fatalf("Field in line did not match inferred type (int): %s", err)
 			}
-		case typ == types.BOOL:
+		case typ == inferer.BOOL:
 			typedv, err = strconv.ParseBool(line[idx])
 			if err != nil {
 				log.Fatalf("Field in line did not match inferred type (bool): %s", err)
 			}
-		case typ == types.FLOAT:
+		case typ == inferer.FLOAT:
 			typedv, err = strconv.ParseFloat(line[idx], 64)
 			if err != nil {
 				log.Fatalf("Field in line did not match inferred type (float): %s", err)
