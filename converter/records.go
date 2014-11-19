@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/morcmarc/csv2json/types"
+	"github.com/morcmarc/csvtoolkit/types"
 )
 
 type Records struct {

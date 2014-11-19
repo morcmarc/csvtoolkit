@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	. "github.com/morcmarc/csv2json/converter"
+	. "github.com/morcmarc/csvtoolkit/converter"
 
 	"github.com/codegangsta/cli"
 )

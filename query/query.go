@@ -6,24 +6,22 @@ import (
 )
 
 type Query struct {
-	input   *os.File
+	reader  CsvReader
 	typeMap map[string]interface{}
 }
 
 func NewQuery(csv *os.File) *Query {
 	q := &Query{
-		input:   csv,
+		reader:  NewDefaultCSVReader(csv),
 		typeMap: make(map[string]interface{}),
 	}
 	return q
 }
 
 func (q *Query) Run(qs string) {
-	csvReader := NewDefaultCSVReader(q.input)
-
 	switch qs {
 	case "keys":
-		r := Keys(csvReader)
+		r := Keys(q.reader)
 		fmt.Println(r)
 		break
 	}

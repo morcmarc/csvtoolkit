@@ -10,7 +10,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/morcmarc/csv2json/types"
+	"github.com/morcmarc/csvtoolkit/types"
 )
 
 type Converter struct {
