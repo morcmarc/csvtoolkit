@@ -1,0 +1,13 @@
+{
+  "PackageVersion": "v0.1.0",
+  "ConfigVersion": "0.9",
+  "BuildConstraints": "windows,linux,darwin,amd64,386",
+  "TaskSettings" : {
+      "bintray" : {
+          "package" : "csvtoolkit",
+          "subject": "morcmarc",
+          "repository": "csvtoolkit",
+          "downloadspage": "downloads.md"
+      }
+  }
+}
