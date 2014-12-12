@@ -8,21 +8,28 @@ import (
 )
 
 const (
+	// Special tokens
 	ItemError ItemType = iota
 	ItemEOF
 
-	ItemKeyword
+	// Identifiers and type literals
 	ItemString
 	ItemNumber
 
-	ItemDot
-	ItemQuote
-
+	// Delimiters
 	ItemBra
 	ItemKet
+
+	// Keywords
+	ItemDot
+	ItemKeys
 )
 
 const EOF = -1
+
+var (
+	first rune
+)
 
 // Lex returns a new Lexer
 func Lex(name, input string) *Lexer {
@@ -33,6 +40,12 @@ func Lex(name, input string) *Lexer {
 	}
 	go l.run()
 	return l
+}
+
+func (l *Lexer) NextItem() Item {
+	item := <-l.items
+	l.lastPos = item.Pos
+	return item
 }
 
 // next returns the next rune in the input.
@@ -90,12 +103,6 @@ func (l *Lexer) errorf(format string, args ...interface{}) stateFn {
 	return nil
 }
 
-func (l *Lexer) NextItem() Item {
-	item := <-l.items
-	l.lastPos = item.Pos
-	return item
-}
-
 func (l *Lexer) run() {
 	for l.state = lexWhitespace; l.state != nil; {
 		l.state = l.state(l)
@@ -110,20 +117,20 @@ func lexWhitespace(l *Lexer) stateFn {
 	l.backup()
 	l.ignore()
 
-	switch r := l.next(); {
-	case r == EOF:
+	switch first = l.next(); {
+	case first == EOF:
 		l.emit(ItemEOF)
 		return nil
-	case r == '[':
+	case first == '[':
 		return lexBra
-	case r == ']':
+	case first == ']':
 		return lexKet
-	case r == '"':
+	case first == '"':
 		return lexString
-	case isKeyword(r):
+	case isKeyword(first):
 		return lexKeyword
 	default:
-		panic(fmt.Sprintf("don't know what to do with: %q", r))
+		panic(fmt.Sprintf("don't know what to do with: %q", first))
 	}
 }
 
@@ -151,11 +158,23 @@ func lexString(l *Lexer) stateFn {
 }
 
 func lexKeyword(l *Lexer) stateFn {
+	k := string(first)
 	for r := l.next(); isKeyword(r); r = l.next() {
+		k += string(r)
 	}
 	l.backup()
 
-	l.emit(ItemKeyword)
+	switch k {
+	case ".":
+		l.emit(ItemDot)
+		break
+	case "keys":
+		l.emit(ItemKeys)
+		break
+	default:
+		l.errorf(`unknown keyword "%s"`, k)
+	}
+
 	return lexWhitespace
 }
 
