@@ -32,5 +32,5 @@ func (this *CallNode) Copy() Node {
 
 func (this *CallNode) String() string {
 	args := fmt.Sprint(this.Args)
-	return fmt.Sprintf("%s(%s)", this.Callee, args[1:len(args)-1])
+	return fmt.Sprintf("f: %s, a: (%s)", this.Callee, args[1:len(args)-1])
 }
