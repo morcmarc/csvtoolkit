@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/morcmarc/csvtoolkit/lexer"
+	"github.com/morcmarc/csvtoolkit/query/lexer"
 )
 
 type NodeType int
@@ -16,7 +16,7 @@ type Node interface {
 
 const (
 	NodeIdent NodeType = iota
-	NodeVector
+	NodeIndex
 	NodeString
 	NodeNumber
 	NodeCall
@@ -45,6 +45,10 @@ func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
 			tree = append(tree, NewIdentNode(item.Val))
 		case lexer.ItemString:
 			tree = append(tree, NewStringNode(item.Val))
+		case lexer.ItemInt:
+			tree = append(tree, NewIntNode(item.Val))
+		case lexer.ItemFloat:
+			tree = append(tree, NewFloatNode(item.Val))
 		case lexer.ItemLeftParen:
 			// Previous node is identifier
 			if tree[len(tree)-1].Type() == NodeIdent {
@@ -54,7 +58,15 @@ func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
 				panic("Was expecting identifier before function call")
 			}
 		case lexer.ItemBra:
-			tree = append(tree, NewVectNode(parser(l, make([]Node, 0), ']')))
+			if len(tree) > 0 {
+				t := parser(l, make([]Node, 0), ']')
+				if len(t) > 1 {
+					panic("Invalid index")
+				}
+				tree[len(tree)-1] = NewIndexNode(tree[len(tree)-1], t[0])
+			} else {
+				panic(fmt.Sprintf("unexpected \"[\" [%d]", item.Pos))
+			}
 		case lexer.ItemRightParen:
 			if lookingFor != ')' {
 				panic(fmt.Sprintf("unexpected \")\" [%d]", item.Pos))

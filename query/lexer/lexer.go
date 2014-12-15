@@ -15,7 +15,8 @@ const (
 	// Identifiers and type literals
 	ItemIdent
 	ItemString
-	ItemNumber
+	ItemInt
+	ItemFloat
 
 	// Delimiters
 	ItemBra        // [
@@ -130,6 +131,8 @@ func lexWhitespace(l *Lexer) stateFn {
 		return lexRightParen
 	case r == '"':
 		return lexString
+	case r == '+' || r == '-' || ('0' <= r && r <= '9'):
+		return lexNumber
 	case isIdentifier(r):
 		return lexIdentifier
 	default:
@@ -170,6 +173,29 @@ func lexString(l *Lexer) stateFn {
 	return lexWhitespace
 }
 
+func lexNumber(l *Lexer) stateFn {
+	if !l.scanNumber() {
+		return l.errorf("bad number syntax: %q", l.input[l.start:l.pos])
+	}
+
+	// if l.start+1 == l.pos {
+	// 	return lexIdentifier
+	// }
+
+	if sign := l.peek(); sign == '+' || sign == '-' {
+		if !l.scanNumber() {
+			return l.errorf("bad number syntax: %q", l.input[l.start:l.pos])
+		}
+		l.emit(ItemFloat)
+	} else if strings.ContainsRune(l.input[l.start:l.pos], '.') {
+		l.emit(ItemFloat)
+	} else {
+		l.emit(ItemInt)
+	}
+
+	return lexWhitespace
+}
+
 func lexIdentifier(l *Lexer) stateFn {
 	for r := l.next(); isIdentifier(r); r = l.next() {
 	}
@@ -177,6 +203,26 @@ func lexIdentifier(l *Lexer) stateFn {
 
 	l.emit(ItemIdent)
 	return lexWhitespace
+}
+
+func (l *Lexer) scanNumber() bool {
+	// Optional leading sign.
+	l.accept("+-")
+	digits := "0123456789"
+	l.acceptRun(digits)
+	if l.accept(".") {
+		l.acceptRun(digits)
+	}
+	if l.accept("eE") {
+		l.accept("+-")
+		l.acceptRun("0123456789")
+	}
+	// Next thing mustn't be alphanumeric.
+	if r := l.peek(); unicode.IsLetter(r) {
+		l.next()
+		return false
+	}
+	return true
 }
 
 // isSpace reports whether r is a space character.

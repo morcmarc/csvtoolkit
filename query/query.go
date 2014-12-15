@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/morcmarc/csvtoolkit/inferer"
-	"github.com/morcmarc/csvtoolkit/parser"
+	"github.com/morcmarc/csvtoolkit/query/parser"
 	"github.com/morcmarc/csvtoolkit/utils"
 )
 

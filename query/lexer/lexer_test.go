@@ -35,6 +35,50 @@ func TestLexerRecognizesKeysAsIdentifier(t *testing.T) {
 	}
 }
 
+func TestLexerRecognizesIntegers(t *testing.T) {
+	l := Lex("query", `10`)
+	i := l.NextItem()
+	if i.Val != `10` {
+		t.Errorf(`Was expecting 10, got: %s`, i.Val)
+	}
+	if i.Typ != ItemInt {
+		t.Errorf("Was expecting Int, got: %s", i.Typ)
+	}
+}
+
+func TestLexerRecognizesFloats(t *testing.T) {
+	l := Lex("query", `3.14`)
+	i := l.NextItem()
+	if i.Val != `3.14` {
+		t.Errorf(`Was expecting 3.14, got: %s`, i.Val)
+	}
+	if i.Typ != ItemFloat {
+		t.Errorf("Was expecting Float, got: %s", i.Typ)
+	}
+}
+
+func TestLexerRecognizesExponentials(t *testing.T) {
+	l := Lex("query", `10-e5`)
+	i := l.NextItem()
+	if i.Val != `10-e5` {
+		t.Errorf(`Was expecting 10e-5, got: %s`, i.Val)
+	}
+	if i.Typ != ItemFloat {
+		t.Errorf("Was expecting Float, got: %s", i.Typ)
+	}
+}
+
+func TestLexerRecognizesNegativeNumbers(t *testing.T) {
+	l := Lex("query", `-10`)
+	i := l.NextItem()
+	if i.Val != `-10` {
+		t.Errorf(`Was expecting -10, got: %s`, i.Val)
+	}
+	if i.Typ != ItemInt {
+		t.Errorf("Was expecting Float, got: %s", i.Typ)
+	}
+}
+
 func TestLexerRecognizesAString(t *testing.T) {
 	l := Lex("query", `"I am a string"`)
 	i := l.NextItem()

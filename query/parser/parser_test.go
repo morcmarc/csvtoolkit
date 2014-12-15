@@ -16,26 +16,30 @@ func TestThatItParsesSimpleCommands(t *testing.T) {
 
 func TestParserParsesFunctionCalls(t *testing.T) {
 	p := ParseFromString("test", `function("argument")`)
-	if p[0].Type() != NodeCall {
-		t.Errorf("Was expecting a call, got: %s", p[0].Type())
-	}
-	if p[0].String() != `function("argument")` {
-		t.Errorf("Unexpected: %s", p[0].String())
+	f := p[0].(*CallNode)
+	a := f.Args[0].(*StringNode)
+	if a.Value != `"argument"` {
+		t.Errorf("Unexpected: %s", a)
 	}
 }
 
-func TestParserParsesVectors(t *testing.T) {
-	p := ParseFromString("test", `.["a"]`)
-	if p[0].Type() != NodeIdent {
-		t.Errorf("Was expecting identifier, got: %s", p[0].Type())
+func TestParserParsesIndexesOnIdentifiers(t *testing.T) {
+	p := ParseFromString("test", `.[1]`)
+	vn := p[0].(*IndexNode)
+	_ = vn.Container.(*IdentNode)
+	i := vn.Index.(*NumberNode)
+	if i.Value != `1` {
+		t.Errorf(`Was expecting "a", got: %s`, i.Value)
 	}
-	if p[1].Type() != NodeVector {
-		t.Errorf("Was expecting vector, got: %s", p[1].Type())
-	}
-	vn := p[1].(*VectorNode)
-	sn := vn.Nodes[0].(*StringNode)
-	if sn.Value != `"a"` {
-		t.Errorf(`Was expecting "a", got: %s`, sn.Value)
+}
+
+func TestParserParsesIndexesOnFunctions(t *testing.T) {
+	p := ParseFromString("test", `map("prop-name")[123]`)
+	vn := p[0].(*IndexNode)
+	_ = vn.Container.(*CallNode)
+	i := vn.Index.(*NumberNode)
+	if i.Value != `123` {
+		t.Errorf(`Was expecting "a", got: %s`, i.Value)
 	}
 }
 
