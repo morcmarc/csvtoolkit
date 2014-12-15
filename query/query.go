@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/morcmarc/csvtoolkit/inferer"
+	"github.com/morcmarc/csvtoolkit/parser"
 	"github.com/morcmarc/csvtoolkit/utils"
 )
 
@@ -13,6 +14,10 @@ type Query struct {
 	reader  utils.CsvReader
 	typeMap map[string]interface{}
 }
+
+const (
+	FuncKeys = "keys"
+)
 
 func NewQuery(csv *os.File) *Query {
 	q := &Query{
@@ -32,10 +37,9 @@ func NewQuery(csv *os.File) *Query {
 
 func (q *Query) Run(qs string) {
 	q.reader.Reset()
-	switch qs {
-	case "keys":
-		r := Keys(q.reader)
-		fmt.Println(r)
-		break
+
+	tree := parser.ParseFromString("query", qs)
+	for _, n := range tree {
+		fmt.Printf("type: %d, val: %s\n", n.Type(), n.String())
 	}
 }

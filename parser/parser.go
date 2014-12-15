@@ -16,6 +16,7 @@ type Node interface {
 
 const (
 	NodeIdent NodeType = iota
+	NodeVector
 	NodeString
 	NodeNumber
 	NodeCall
@@ -52,9 +53,16 @@ func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
 			} else {
 				panic("Was expecting identifier before function call")
 			}
+		case lexer.ItemBra:
+			tree = append(tree, NewVectNode(parser(l, make([]Node, 0), ']')))
 		case lexer.ItemRightParen:
 			if lookingFor != ')' {
 				panic(fmt.Sprintf("unexpected \")\" [%d]", item.Pos))
+			}
+			return tree
+		case lexer.ItemKet:
+			if lookingFor != ']' {
+				panic(fmt.Sprintf("unexpected \"]\" [%d]", item.Pos))
 			}
 			return tree
 		case lexer.ItemError:
