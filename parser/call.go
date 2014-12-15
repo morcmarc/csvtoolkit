@@ -10,11 +10,11 @@ type CallNode struct {
 	Args   []Node
 }
 
-func NewCallNode(args []Node) Node {
+func NewCallNode(callee Node, args []Node) Node {
 	return &CallNode{
 		NodeType: NodeCall,
-		Callee:   args[0],
-		Args:     args[1:],
+		Callee:   callee,
+		Args:     args,
 	}
 }
 
@@ -32,5 +32,5 @@ func (this *CallNode) Copy() Node {
 
 func (this *CallNode) String() string {
 	args := fmt.Sprint(this.Args)
-	return fmt.Sprintf("(%s %s)", this.Callee, args[1:len(args)-1])
+	return fmt.Sprintf("%s(%s)", this.Callee, args[1:len(args)-1])
 }

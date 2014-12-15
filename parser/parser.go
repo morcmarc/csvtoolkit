@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/morcmarc/csvtoolkit/lexer"
 )
 
@@ -34,32 +36,29 @@ func Parse(l *lexer.Lexer) []Node {
 func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
 	for item := l.NextItem(); item.Typ != lexer.ItemEOF; {
 		switch t := item.Typ; t {
+		case lexer.ItemEOF:
+			if lookingFor != ' ' {
+				panic(fmt.Sprintf("Unexpected end of input, was expecting: %s", lookingFor))
+			}
 		case lexer.ItemIdent:
 			tree = append(tree, NewIdentNode(item.Val))
 		case lexer.ItemString:
 			tree = append(tree, NewStringNode(item.Val))
-		// case lexer.ItemInt:
-		// 	tree = append(tree, newIntNode(item.Value))
-		// case lexer.ItemFloat:
-		// 	tree = append(tree, newFloatNode(item.Value))
-		// case lexer.ItemComplex:
-		// 	tree = append(tree, newComplexNode(item.Value))
-		// case lexer.ItemLeftParen:
-		// 	tree = append(tree, newCallNode(parser(l, make([]Node, 0), ')')))
-		// case lexer.ItemLeftVect:
-		// 	tree = append(tree, newVectNode(parser(l, make([]Node, 0), ']')))
-		// case lexer.ItemRightParen:
-		// 	if lookingFor != ')' {
-		// 		panic(fmt.Sprintf("unexpected \")\" [%d]", item.Pos))
-		// 	}
-		// 	return tree
-		// case lexer.ItemRightVect:
-		// 	if lookingFor != ']' {
-		// 		panic(fmt.Sprintf("unexpected \"]\" [%d]", item.Pos))
-		// 	}
-		// 	return tree
+		case lexer.ItemLeftParen:
+			// Previous node is identifier
+			if tree[len(tree)-1].Type() == NodeIdent {
+				t := parser(l, make([]Node, 0), ')')
+				tree[len(tree)-1] = NewCallNode(tree[len(tree)-1], t)
+			} else {
+				panic("Was expecting identifier before function call")
+			}
+		case lexer.ItemRightParen:
+			if lookingFor != ')' {
+				panic(fmt.Sprintf("unexpected \")\" [%d]", item.Pos))
+			}
+			return tree
 		case lexer.ItemError:
-			println(item.Val)
+			fmt.Println(item.Val)
 		default:
 			panic("Bad Item type")
 		}
