@@ -13,6 +13,7 @@ const (
 	ItemEOF
 
 	// Identifiers and type literals
+	ItemIdent
 	ItemString
 	ItemNumber
 
@@ -21,15 +22,11 @@ const (
 	ItemKet
 
 	// Keywords
-	ItemDot
-	ItemKeys
+	// -- probably have to add "." and "keys" as keywords and differentiate
+	// them from identifiers.
 )
 
 const EOF = -1
-
-var (
-	first rune
-)
 
 // Lex returns a new Lexer
 func Lex(name, input string) *Lexer {
@@ -117,20 +114,20 @@ func lexWhitespace(l *Lexer) stateFn {
 	l.backup()
 	l.ignore()
 
-	switch first = l.next(); {
-	case first == EOF:
+	switch r := l.next(); {
+	case r == EOF:
 		l.emit(ItemEOF)
 		return nil
-	case first == '[':
+	case r == '[':
 		return lexBra
-	case first == ']':
+	case r == ']':
 		return lexKet
-	case first == '"':
+	case r == '"':
 		return lexString
-	case isKeyword(first):
-		return lexKeyword
+	case isIdentifier(r):
+		return lexIdentifier
 	default:
-		panic(fmt.Sprintf("don't know what to do with: %q", first))
+		panic(fmt.Sprintf("don't know what to do with: %q", r))
 	}
 }
 
@@ -157,24 +154,12 @@ func lexString(l *Lexer) stateFn {
 	return lexWhitespace
 }
 
-func lexKeyword(l *Lexer) stateFn {
-	k := string(first)
-	for r := l.next(); isKeyword(r); r = l.next() {
-		k += string(r)
+func lexIdentifier(l *Lexer) stateFn {
+	for r := l.next(); isIdentifier(r); r = l.next() {
 	}
 	l.backup()
 
-	switch k {
-	case ".":
-		l.emit(ItemDot)
-		break
-	case "keys":
-		l.emit(ItemKeys)
-		break
-	default:
-		l.errorf(`unknown keyword "%s"`, k)
-	}
-
+	l.emit(ItemIdent)
 	return lexWhitespace
 }
 
@@ -188,8 +173,8 @@ func isEndOfLine(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-// isKeyword reports whether r is a valid rune for a keyword.
-func isKeyword(r rune) bool {
+// isIdentifier reports whether r is a valid rune for an identifier.
+func isIdentifier(r rune) bool {
 	return r == '_' || r == '.' || unicode.IsLetter(r)
 }
 

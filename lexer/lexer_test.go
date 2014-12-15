@@ -13,24 +13,24 @@ func TestLexerRecognizesEOF(t *testing.T) {
 	}
 }
 
-func TestLexerRecognizesDotKeyword(t *testing.T) {
+func TestLexerRecognizesDotAsIdentifier(t *testing.T) {
 	l := Lex("query", ".")
 	i := l.NextItem()
 	if i.Val != "." {
 		t.Errorf("Was expecting '.', got: %s", i.Val)
 	}
-	if i.Typ != ItemDot {
+	if i.Typ != ItemIdent {
 		t.Errorf("Was expecting Dot, got: %s", i.Typ)
 	}
 }
 
-func TestLexerRecognizesKeysKeyword(t *testing.T) {
+func TestLexerRecognizesKeysAsIdentifier(t *testing.T) {
 	l := Lex("query", "keys")
 	i := l.NextItem()
 	if i.Val != "keys" {
 		t.Errorf("Was expecting 'keys', got: %s", i.Val)
 	}
-	if i.Typ != ItemKeys {
+	if i.Typ != ItemIdent {
 		t.Errorf("Was expecting Keys, got: %s", i.Typ)
 	}
 }
@@ -74,7 +74,7 @@ func TestLexerRecognizesBraAndKet(t *testing.T) {
 func TestLexerIgnoresWhitespaces(t *testing.T) {
 	l := Lex("query", `   .   [ "Attribute-Name"]     `)
 	i := l.NextItem()
-	if i.Typ != ItemDot {
+	if i.Typ != ItemIdent {
 		t.Error("Was expecting a Dot")
 	}
 	b := l.NextItem()
