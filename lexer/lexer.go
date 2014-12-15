@@ -18,8 +18,10 @@ const (
 	ItemNumber
 
 	// Delimiters
-	ItemBra
-	ItemKet
+	ItemBra        // [
+	ItemKet        // ]
+	ItemLeftParen  // (
+	ItemRightParen // )
 
 	// Keywords
 	// -- probably have to add "." and "keys" as keywords and differentiate
@@ -122,6 +124,10 @@ func lexWhitespace(l *Lexer) stateFn {
 		return lexBra
 	case r == ']':
 		return lexKet
+	case r == '(':
+		return lexLeftParen
+	case r == ')':
+		return lexRightParen
 	case r == '"':
 		return lexString
 	case isIdentifier(r):
@@ -129,6 +135,16 @@ func lexWhitespace(l *Lexer) stateFn {
 	default:
 		panic(fmt.Sprintf("don't know what to do with: %q", r))
 	}
+}
+
+func lexLeftParen(l *Lexer) stateFn {
+	l.emit(ItemLeftParen)
+	return lexWhitespace
+}
+
+func lexRightParen(l *Lexer) stateFn {
+	l.emit(ItemRightParen)
+	return lexWhitespace
 }
 
 func lexBra(l *Lexer) stateFn {

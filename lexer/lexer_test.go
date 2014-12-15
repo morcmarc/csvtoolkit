@@ -57,6 +57,26 @@ func TestLexerThrowsErrorIfStringIsUnterminated(t *testing.T) {
 	}
 }
 
+func TestLexerRecognizesParentheses(t *testing.T) {
+	l := Lex("query", `function(argument)`)
+	f := l.NextItem()
+	lp := l.NextItem()
+	a := l.NextItem()
+	rp := l.NextItem()
+	if f.Typ != ItemIdent {
+		t.Errorf("Was expecting an identifier, got :%s", f.Typ)
+	}
+	if lp.Typ != ItemLeftParen {
+		t.Errorf("Was expecting a left parenthesis, got: %s", lp.Typ)
+	}
+	if a.Typ != ItemIdent {
+		t.Errorf("Was expecting a argument, got: %s", a.Typ)
+	}
+	if rp.Typ != ItemRightParen {
+		t.Errorf("Was expecting a right parenthesis, got: %s", rp.Typ)
+	}
+}
+
 func TestLexerRecognizesBraAndKet(t *testing.T) {
 	l := Lex("query", `.["Attribute-Name"]`)
 	l.NextItem()
