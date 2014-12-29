@@ -19,6 +19,8 @@ func (c *csvReaderMock) Read() ([]string, error) {
 	return csv[c.i], nil
 }
 
+func (c *csvReaderMock) Reset() {}
+
 func TestItReturnsKeys(t *testing.T) {
 	reader := &csvReaderMock{}
 	keys := Keys(reader)

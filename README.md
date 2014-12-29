@@ -17,7 +17,7 @@ $ csvtoolkit convert -o outputfile.json inputfile.csv
 Runs the given query against a csv file. The syntax is based on [jq](http://stedolan.github.io/jq/)'s.
 
 ```
-$ csvtoolkit query -q "keys" inputfile.csv
+$ csvtoolkit query -q 'keys()[0]' inputfile.csv
 ```
 
 ## Roadmap
