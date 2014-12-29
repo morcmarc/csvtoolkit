@@ -28,5 +28,5 @@ func (this *IndexNode) Copy() Node {
 }
 
 func (this *IndexNode) String() string {
-	return fmt.Sprintf("c: %s, i: [%s]", this.Container.String(), this.Index)
+	return fmt.Sprintf("cont: %s, idx: %s", this.Container.String(), this.Index)
 }

@@ -146,3 +146,14 @@ func TestLexerIgnoresWhitespaces(t *testing.T) {
 		t.Error("Was expecting a Bra")
 	}
 }
+
+func TestLexerRecognizesPiping(t *testing.T) {
+	l := Lex("query", "keys() | .[0]")
+	l.NextItem() // keys
+	l.NextItem() // (
+	l.NextItem() // )
+	p := l.NextItem()
+	if p.Typ != ItemPipe {
+		t.Errorf("Was expecting a pipe, got: %s", p.Typ)
+	}
+}

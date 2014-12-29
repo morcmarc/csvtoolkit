@@ -20,6 +20,7 @@ const (
 	NodeString
 	NodeNumber
 	NodeCall
+	NodePipe
 )
 
 func (this NodeType) Type() NodeType {
@@ -41,6 +42,8 @@ func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
 			if lookingFor != ' ' {
 				panic(fmt.Sprintf("Unexpected end of input, was expecting: %s", lookingFor))
 			}
+		case lexer.ItemPipe:
+			tree = append(tree, NewPipeNode(item.Val))
 		case lexer.ItemIdent:
 			tree = append(tree, NewIdentNode(item.Val))
 		case lexer.ItemString:

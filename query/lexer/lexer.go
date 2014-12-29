@@ -25,6 +25,7 @@ const (
 	ItemRightParen // )
 
 	// Keywords
+	ItemPipe
 	// -- probably have to add "." and "keys" as keywords and differentiate
 	// them from identifiers.
 )
@@ -121,6 +122,8 @@ func lexWhitespace(l *Lexer) stateFn {
 	case r == EOF:
 		l.emit(ItemEOF)
 		return nil
+	case r == '|':
+		return lexPipe
 	case r == '[':
 		return lexBra
 	case r == ']':
@@ -138,6 +141,11 @@ func lexWhitespace(l *Lexer) stateFn {
 	default:
 		panic(fmt.Sprintf("don't know what to do with: %q", r))
 	}
+}
+
+func lexPipe(l *Lexer) stateFn {
+	l.emit(ItemPipe)
+	return lexWhitespace
 }
 
 func lexLeftParen(l *Lexer) stateFn {
