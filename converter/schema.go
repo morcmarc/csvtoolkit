@@ -7,20 +7,20 @@ import (
 	"github.com/morcmarc/csvtoolkit/inferer"
 )
 
-type Records struct {
+type Schema struct {
 	Fields  []string
 	TypeMap map[string]interface{}
 }
 
-func NewRecords(fields []string, typeMap map[string]interface{}) *Records {
-	r := &Records{
+func NewSchema(fields []string, typeMap map[string]interface{}) *Schema {
+	r := &Schema{
 		Fields:  fields,
 		TypeMap: typeMap,
 	}
 	return r
 }
 
-func (r *Records) Convert(line []string) map[string]interface{} {
+func (r *Schema) Convert(line []string) map[string]interface{} {
 	data := make(map[string]interface{}, len(r.Fields))
 
 	for idx, f := range r.Fields {

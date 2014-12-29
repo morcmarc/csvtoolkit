@@ -44,7 +44,7 @@ func (c *Converter) Run() {
 	cReader.Reset()
 	cReader.Read()
 
-	r := NewRecords(fields, typeMap)
+	r := NewSchema(fields, typeMap)
 
 	c.output.WriteString("[")
 	firstItem := true
