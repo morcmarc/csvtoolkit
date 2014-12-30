@@ -19,23 +19,21 @@ type Query struct {
 	reader     *utils.DefaultCSVReader
 	schema     *converter.Schema
 	typeMap    Row
-	output     []Row
 	dataBuffer []Row
+	cursor     Row
 }
-
-const (
-	FuncKeys = "keys"
-)
 
 func NewQuery(csv *os.File) *Query {
 	q := &Query{
 		reader:     utils.NewDefaultCSVReader(csv),
 		typeMap:    Row{},
 		dataBuffer: []Row{},
-		output:     []Row{},
 	}
 
-	fields := Keys(q.reader)
+	fields, err := q.reader.Read()
+	if err != nil {
+		log.Fatalf("Could not read: %s", err)
+	}
 	typeMap, err := inferer.Infer(q.reader, fields, 10)
 	if err != nil {
 		log.Fatalf("Could not infer types: %s", err)
@@ -48,7 +46,6 @@ func NewQuery(csv *os.File) *Query {
 
 func (q *Query) Run(qs string) {
 	tree := parser.ParseFromString("query", qs)
-
 	// First, load in data
 	for {
 		line, err := q.reader.Read()
@@ -58,59 +55,61 @@ func (q *Query) Run(qs string) {
 		q.dataBuffer = append(q.dataBuffer, q.schema.Convert(line))
 	}
 
+	var prev interface{} = q.dataBuffer
 	// Run query against the data
 	for _, n := range tree {
-		q.evalNode(n)
+		prev = q.evalNode(n, prev)
 	}
 
-	q.output = q.dataBuffer
-	fmt.Printf("%s\n", q.output)
+	fmt.Printf("%v\n", prev)
 }
 
-func (q *Query) evalNode(node parser.Node) {
+func (q *Query) evalNode(node parser.Node, prev interface{}) interface{} {
 	switch node.Type() {
 	case parser.NodeCall:
-		q.evalFuncCall(node.(*parser.CallNode))
-		break
+		return q.evalFuncCall(node.(*parser.CallNode), prev)
 	case parser.NodeIndex:
-		q.evalIndex(node.(*parser.IndexNode))
-		break
+		return q.evalIndex(node.(*parser.IndexNode), prev)
 	case parser.NodePipe:
-		q.evalPipe()
-		break
+		return prev
 	}
+	return prev
 }
 
-func (q *Query) evalPipe() {
-	q.output = q.dataBuffer
-}
-
-func (q *Query) evalFuncCall(node *parser.CallNode) {
+func (q *Query) evalFuncCall(node *parser.CallNode, prev interface{}) interface{} {
 	switch {
 	case isKeysFunc(node):
-		// q.dataBuffer = Keys(r)
-		break
+		return Keys(prev.(Row))
+	case isDotFunc(node):
+		return processIndex(prev.([]Row), node.Args[0])
 	}
+	return nil
 }
 
-func (q *Query) evalIndex(node *parser.IndexNode) {
+func (q *Query) evalIndex(node *parser.IndexNode, prev interface{}) interface{} {
+	var p interface{} = prev
+	// Resolve "nested" indexing, i.e.: .[0]["Property"] first have to get the
+	// value of .[0] and then execute ["Property"] on that result instead
 	if node.Container.Type() != parser.NodeIdent {
-		q.evalNode(node.Container)
+		p = q.evalNode(node.Container, prev)
 	}
-	if node.Index.Type() == parser.NodeNumber {
-		i := node.Index.(*parser.NumberNode)
-		idx, err := strconv.Atoi(i.Value)
+	if p == nil {
+		return nil
+	}
+	return processIndex(p, node.Index)
+}
+
+func processIndex(data interface{}, idx parser.Node) interface{} {
+	if idx.Type() == parser.NodeString {
+		idx := idx.(*parser.StringNode).Value
+		return Property(data.(Row), idx)
+	}
+	if idx.Type() == parser.NodeNumber {
+		idx, err := strconv.Atoi(idx.(*parser.NumberNode).Value)
 		if err != nil {
 			panic("Invalid index")
 		}
-		v := q.dataBuffer[idx]
-		q.dataBuffer = []Row{v}
+		return At(data.([]Row), idx)
 	}
-}
-
-func isKeysFunc(node *parser.CallNode) bool {
-	if node.Callee.String() == FuncKeys {
-		return true
-	}
-	return false
+	return data
 }

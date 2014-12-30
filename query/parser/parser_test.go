@@ -18,7 +18,7 @@ func TestParserParsesFunctionCalls(t *testing.T) {
 	p := ParseFromString("test", `function("argument")`)
 	f := p[0].(*CallNode)
 	a := f.Args[0].(*StringNode)
-	if a.Value != `"argument"` {
+	if a.Value != `argument` {
 		t.Errorf("Unexpected: %s", a)
 	}
 }
@@ -48,7 +48,7 @@ func TestParserHandlesNestedFunctionArguments(t *testing.T) {
 	c1n := p[0].(*CallNode)
 	c2n := c1n.Args[0].(*CallNode)
 	a := c2n.Args[0].(*StringNode)
-	if a.Value != `"a"` {
+	if a.Value != `a` {
 		t.Errorf(`Was expecting "a", got: %s`, a.Value)
 	}
 }

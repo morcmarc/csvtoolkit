@@ -16,8 +16,19 @@ $ csvtoolkit convert -o outputfile.json inputfile.csv
 
 Runs the given query against a csv file. The syntax is based on [jq](http://stedolan.github.io/jq/)'s.
 
+Example:
+
 ```
-$ csvtoolkit query -q 'keys()[0]' inputfile.csv
+$ csvtoolkit query -q '.[0] | keys()' inputfile.csv
+```
+
+This will pick the first item in the file and feed it into the `keys` function
+which will then return the name of the columns.
+
+You can also use the `.` filter as a function, the query above can be written as:
+
+```
+$ csvtoolkit query -q '.(0) | keys' inputfile.csv
 ```
 
 ## Roadmap
