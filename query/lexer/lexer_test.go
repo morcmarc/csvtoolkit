@@ -58,24 +58,61 @@ func TestLexerRecognizesFloats(t *testing.T) {
 }
 
 func TestLexerRecognizesExponentials(t *testing.T) {
-	l := Lex("query", `10-e5`)
+	l := Lex("query", `0.3e-5`)
 	i := l.NextItem()
-	if i.Val != `10-e5` {
-		t.Errorf(`Was expecting 10e-5, got: %s`, i.Val)
+	if i.Val != `0.3e-5` {
+		t.Errorf(`Was expecting 0.3e-5, got: %s`, i.Val)
 	}
 	if i.Typ != ItemFloat {
 		t.Errorf("Was expecting Float, got: %s", i.Typ)
 	}
 }
 
-func TestLexerRecognizesNegativeNumbers(t *testing.T) {
-	l := Lex("query", `-10`)
-	i := l.NextItem()
-	if i.Val != `-10` {
-		t.Errorf(`Was expecting -10, got: %s`, i.Val)
+func TestLexerDoesntConfusePlusOperationWithExponential(t *testing.T) {
+	l := Lex("query", `1 + 1`)
+	p1 := l.NextItem()
+	p2 := l.NextItem()
+	p3 := l.NextItem()
+	if p1.Typ != ItemInt {
+		t.Errorf("Was expecting integer, got %s", p1.Typ)
 	}
-	if i.Typ != ItemInt {
-		t.Errorf("Was expecting Float, got: %s", i.Typ)
+	if p2.Typ != ItemPlus {
+		t.Errorf("Was expecting plus operation, got %s", p2.Typ)
+	}
+	if p3.Typ != ItemInt {
+		t.Errorf("Was expecting integer, got %s", p3.Typ)
+	}
+}
+
+func TestLexerDoesntConfuseMinusOperationWithExponential(t *testing.T) {
+	l := Lex("query", `1 - 1`)
+	p1 := l.NextItem()
+	p2 := l.NextItem()
+	p3 := l.NextItem()
+	if p1.Typ != ItemInt {
+		t.Errorf("Was expecting integer, got %s", p1.Typ)
+	}
+	if p2.Typ != ItemMinus {
+		t.Errorf("Was expecting minus operation, got %s", p2.Typ)
+	}
+	if p3.Typ != ItemInt {
+		t.Errorf("Was expecting integer, got %s", p3.Typ)
+	}
+}
+
+func TestLexerRecognizesEqualSign(t *testing.T) {
+	l := Lex("query", "a = 2")
+	p1 := l.NextItem()
+	p2 := l.NextItem()
+	p3 := l.NextItem()
+	if p1.Typ != ItemIdent {
+		t.Errorf("Was expecting identifier, got %s", p1.Typ)
+	}
+	if p2.Typ != ItemEquals {
+		t.Errorf("Was expecting equal operation, got %s", p2.Typ)
+	}
+	if p3.Typ != ItemInt {
+		t.Errorf("Was expecting integer, got %s", p3.Typ)
 	}
 }
 

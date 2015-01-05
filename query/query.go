@@ -101,6 +101,7 @@ func (q *Query) evalIndex(node *parser.IndexNode, prev interface{}) interface{} 
 	return processIndex(p, node.Index)
 }
 
+// @TODO: figure out how to merge processIndex and processHas nicely
 func processIndex(data interface{}, idx parser.Node) interface{} {
 	if idx.Type() == parser.NodeString {
 		idx := idx.(*parser.StringNode).Value
@@ -116,6 +117,7 @@ func processIndex(data interface{}, idx parser.Node) interface{} {
 	return data
 }
 
+// @TODO: figure out how to merge processIndex and processHas nicely
 func processHas(data interface{}, idx parser.Node) bool {
 	if idx.Type() == parser.NodeString {
 		idx := idx.(*parser.StringNode).Value

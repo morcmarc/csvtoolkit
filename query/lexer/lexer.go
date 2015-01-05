@@ -18,6 +18,16 @@ const (
 	ItemInt
 	ItemFloat
 
+	// Operators
+	ItemPlus        // +
+	ItemMinus       // -
+	ItemMultiply    // *
+	ItemDivide      // /
+	ItemModulo      // %
+	ItemEquals      // =
+	ItemLessThan    // <
+	ItemGreaterThan // >
+
 	// Delimiters
 	ItemBra        // [
 	ItemKet        // ]
@@ -134,13 +144,34 @@ func lexWhitespace(l *Lexer) stateFn {
 		return lexRightParen
 	case r == '"':
 		return lexString
-	case r == '+' || r == '-' || ('0' <= r && r <= '9'):
+	case r == '+':
+		return lexPlus
+	case r == '-':
+		return lexMinus
+	case r == '=':
+		return lexEquals
+	case l.scanNumber() && (r == '+' || r == '-' || ('0' <= r && r <= '9')):
 		return lexNumber
 	case isIdentifier(r):
 		return lexIdentifier
 	default:
 		panic(fmt.Sprintf("don't know what to do with: %q", r))
 	}
+}
+
+func lexEquals(l *Lexer) stateFn {
+	l.emit(ItemEquals)
+	return lexWhitespace
+}
+
+func lexPlus(l *Lexer) stateFn {
+	l.emit(ItemPlus)
+	return lexWhitespace
+}
+
+func lexMinus(l *Lexer) stateFn {
+	l.emit(ItemMinus)
+	return lexWhitespace
 }
 
 func lexPipe(l *Lexer) stateFn {
@@ -185,10 +216,6 @@ func lexNumber(l *Lexer) stateFn {
 	if !l.scanNumber() {
 		return l.errorf("bad number syntax: %q", l.input[l.start:l.pos])
 	}
-
-	// if l.start+1 == l.pos {
-	// 	return lexIdentifier
-	// }
 
 	if sign := l.peek(); sign == '+' || sign == '-' {
 		if !l.scanNumber() {
