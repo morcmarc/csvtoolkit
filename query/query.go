@@ -82,6 +82,8 @@ func (q *Query) evalFuncCall(node *parser.CallNode, prev interface{}) interface{
 		return Keys(prev.(Row))
 	case isDotFunc(node):
 		return processIndex(prev.([]Row), node.Args[0])
+	case isHasFunc(node):
+		return processHas(prev, node.Args[0])
 	}
 	return nil
 }
@@ -112,4 +114,19 @@ func processIndex(data interface{}, idx parser.Node) interface{} {
 		return At(data.([]Row), idx)
 	}
 	return data
+}
+
+func processHas(data interface{}, idx parser.Node) bool {
+	if idx.Type() == parser.NodeString {
+		idx := idx.(*parser.StringNode).Value
+		return HasProperty(data.(Row), idx)
+	}
+	if idx.Type() == parser.NodeNumber {
+		idx, err := strconv.Atoi(idx.(*parser.NumberNode).Value)
+		if err != nil {
+			panic("Invalid index")
+		}
+		return HasIndex(data.([]Row), idx)
+	}
+	return false
 }
