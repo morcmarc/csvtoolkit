@@ -90,7 +90,7 @@ func GuessString(v string) interface{} {
 	} else if typedv, err := strconv.ParseFloat(v, 64); err == nil {
 		return typedv
 	} else if v == "" {
-		return nil
+		return STRING
 	}
 	return v
 }
